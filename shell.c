@@ -30,6 +30,20 @@ void parse(char *command, char **argv)
   *argv = 0;
 }
 
+int is_handled(char ** argv)
+{
+  if(strcmp(argv[0], "exit") == 0)
+  {
+    exit_process(1);
+  }
+  if(strcmp(argv[0], "cd") == 0)
+  {
+    chdir(argv[1]);
+    return 1;
+  }
+  return 0;
+}
+
 int main(void) {
   char command[255];
   char *argv[255];
@@ -39,6 +53,10 @@ int main(void) {
     printf("\nmy shell $ ");
     gets(command);
     parse(command, argv);
+    if(is_handled(argv)) {
+      continue;
+    }
+    
     int pid = fork();
     if(pid == 0)
     {
