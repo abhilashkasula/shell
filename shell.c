@@ -33,10 +33,10 @@ void parse(char *command, char **argv)
 int main(void) {
   char command[255];
   char *argv[255];
+  signal(SIGINT, SIG_IGN);
   while (1)
   {
-    printf("my shell $ ");
-    signal(SIGINT, SIG_IGN);
+    printf("\nmy shell $ ");
     gets(command);
     parse(command, argv);
     int pid = fork();
@@ -44,6 +44,7 @@ int main(void) {
     {
       signal(SIGINT, exit_process);
       execvp(*argv, argv);
+      printf("Command not found\n");
     }
     else
     {
