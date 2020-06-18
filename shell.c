@@ -27,7 +27,7 @@ void parse(char *command, char **argv)
       command++;
     }
   }
-  *argv = 0;
+  *argv = NULL;
 }
 
 int is_handled(char ** argv)
