@@ -5,6 +5,9 @@
 #include <string.h>
 #include <signal.h>
 
+#define COLOR "\e[1;33m"
+#define RESET "\e[0m"
+
 void exit_process(int sig)
 {
   exit(0);
@@ -47,10 +50,12 @@ int is_handled(char ** argv)
 int main(void) {
   char command[255];
   char *argv[255];
+  char pwd[255];
   signal(SIGINT, SIG_IGN);
   while (1)
   {
-    printf("\nmy shell $ ");
+    getcwd(pwd, sizeof(pwd));
+    printf(COLOR"\n %s$ "RESET, pwd);
     gets(command);
     parse(command, argv);
     if(is_handled(argv)) {
