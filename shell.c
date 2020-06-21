@@ -5,7 +5,7 @@
 #include <string.h>
 #include <signal.h>
 
-#define COLOR "\e[1;33m"
+#define COLOR "\e[0;36m"
 #define RESET "\e[0m"
 
 void exit_process(int sig)
@@ -51,11 +51,13 @@ int main(void) {
   char command[255];
   char *argv[255];
   char pwd[255];
+  char dollar_color[10] = "\e[0;32m";
   signal(SIGINT, SIG_IGN);
   while (1)
   {
     getcwd(pwd, sizeof(pwd));
-    printf(COLOR"\n %s$ "RESET, pwd);
+    printf(COLOR"\n %s "RESET, pwd);
+    printf("%s$ " RESET, dollar_color);
     gets(command);
     parse(command, argv);
     if(is_handled(argv)) {
@@ -68,10 +70,12 @@ int main(void) {
       signal(SIGINT, exit_process);
       execvp(*argv, argv);
       printf("Command not found\n");
+      exit(1);
     }
     else
     {
       wait(&pid);
+      dollar_color[5] = pid ? '1' : '2';
     }
   }
   return 0;
