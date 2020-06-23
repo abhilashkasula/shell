@@ -12,9 +12,9 @@
 #define RED "\e[0;31m"
 #define RESET "\e[0m"
 
-int is_handled(char **args, List_ptr alias_list, int *exit_code)
+int is_handled(char **args, List_ptr aliases, int *exit_code)
 {
-  char *actual = get_actual(alias_list, args[0]);
+  char *actual = get_actual(aliases, args[0]);
   if (strcmp(actual, "exit") == 0)
   {
     exit(0);
@@ -26,7 +26,7 @@ int is_handled(char **args, List_ptr alias_list, int *exit_code)
   }
   if (strcmp(actual, "alias") == 0)
   {
-    handle_alias(args, alias_list);
+    handle_alias(args, aliases);
     *exit_code = 0;
     return 1;
   }
@@ -62,7 +62,7 @@ int main(void)
   char command[255];
   char pwd[255];
   signal(SIGINT, SIG_IGN);
-  List_ptr alias_list = create_list();
+  List_ptr aliases = create_list();
   int exit_code = 0;
   while (1)
   {
@@ -71,7 +71,7 @@ int main(void)
     printf(exit_code ? RED : GREEN);
     printf("$ " RESET);
     gets(command);
-    execute(command, alias_list, &exit_code);
+    execute(command, aliases, &exit_code);
   }
   return 0;
 }
