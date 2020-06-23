@@ -2,25 +2,7 @@
 #include <string.h>
 #include <stdio.h>
 #include "alias.h"
-
-char **split_into_two(char * alias, char delimiter)
-{
-  char **split_string = malloc(sizeof(char *) * 2);
-  int length = strlen(alias);
-
-  for(int i = 0; i < length; i++)
-  {
-    if(alias[i] == delimiter) {
-      split_string[0] = malloc(sizeof(char) * i + 1);
-      split_string[1] = malloc(sizeof(char) * (length - i));
-      split_string[0][i] = '\0';
-      memcpy(split_string[0], alias, i);
-      memcpy(split_string[1], alias + i + 1, length - i);
-    }
-  }
-
-  return split_string;
-}
+#include "utils.h"
 
 Alias_ptr create_alias(char *key, char *val)
 {
@@ -51,19 +33,6 @@ Alias_List_ptr create_alias_list(void)
   list->first = NULL;
   list->last = NULL;
   return list;
-}
-
-int includes(char *text, char delimiter)
-{
-  int is_found = 0;
-  for(int i = 0; i < strlen(text); i++)
-  {
-    if(text[i] == delimiter)
-    {
-      is_found = 1;
-    }
-  }
-  return is_found;
 }
 
 void print_match_aliases(Alias_List_ptr aliases, char *match)
