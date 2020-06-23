@@ -6,7 +6,6 @@
 #include <signal.h>
 #include "alias.h"
 #include "utils.h"
-#include "var.h"
 
 #define COLOR "\e[0;36m"
 #define RESET "\e[0m"
