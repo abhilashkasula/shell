@@ -6,13 +6,14 @@
 #include <signal.h>
 #include "alias.h"
 #include "utils.h"
+#include "var.h"
 
 #define COLOR "\e[0;36m"
 #define GREEN "\e[0;32m"
 #define RED "\e[0;31m"
 #define RESET "\e[0m"
 
-int is_handled(char **args, List_ptr aliases, int *exit_code)
+int is_handled(char **args, List_ptr aliases, List_ptr vars, int *exit_code)
 {
   char *actual = get_actual(aliases, args[0]);
   if (strcmp(actual, "exit") == 0)
@@ -30,13 +31,20 @@ int is_handled(char **args, List_ptr aliases, int *exit_code)
     *exit_code = 0;
     return 1;
   }
+  if(includes(actual, '='))
+  {
+    *exit_code = add_var(vars, actual);
+    return 1;
+  }
   return 0;
 }
 
-void execute(char *command, List_ptr aliases, int *exit_code)
+void execute(char *command, List_ptr aliases, List_ptr vars, int * exit_code)
 {
   char **args = split(command, ' ');
-  if (is_handled(args, aliases, exit_code))
+  interpolate(args, vars);
+
+  if (is_handled(args, aliases, vars, exit_code))
   {
     return;
   }
@@ -63,6 +71,7 @@ int main(void)
   char pwd[255];
   signal(SIGINT, SIG_IGN);
   List_ptr aliases = create_list();
+  List_ptr vars = create_list();
   int exit_code = 0;
   while (1)
   {
@@ -71,7 +80,7 @@ int main(void)
     printf(exit_code ? RED : GREEN);
     printf("$ " RESET);
     gets(command);
-    execute(command, aliases, &exit_code);
+    execute(command, aliases, vars, &exit_code);
   }
   return 0;
 }

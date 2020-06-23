@@ -7,7 +7,6 @@
 void add_alias(List_ptr aliases, char *alias)
 {
   char **split_alias = split(alias, '=');
-  printf("%s %s\n", split_alias[0], split_alias[1]);
   add(aliases, split_alias[0], split_alias[1]);
 }
 
