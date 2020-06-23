@@ -1,22 +1,35 @@
 #include "utils.h"
 
-char **split_into_two(char * text, char delimiter)
+char **split(char *string, char delimiter)
 {
-  char **split_string = malloc(sizeof(char *) * 2);
-  int length = strlen(text);
+  char *args[10];
+  int length = strlen(string);
+  char text[length];
+  int index = 0;
+  int args_length = 0;
 
-  for(int i = 0; i < length; i++)
+  for (int i = 0; i <= length; i++)
   {
-    if(text[i] == delimiter) {
-      split_string[0] = malloc(sizeof(char) * i + 1);
-      split_string[1] = malloc(sizeof(char) * (length - i));
-      split_string[0][i] = '\0';
-      memcpy(split_string[0], text, i);
-      memcpy(split_string[1], text + i + 1, length - i);
+    if (string[i] == delimiter || string[i] == 0)
+    {
+      text[index] = '\0';
+      index++;
+      args[args_length] = malloc(sizeof(char) * index);
+      memcpy(args[args_length], text, index);
+      index = 0;
+      args_length++;
+    }
+    else
+    {
+      text[index] = string[i];
+      index++;
     }
   }
 
-  return split_string;
+  args[args_length] = NULL;
+  char **parsed = malloc(sizeof(char *) * args_length + 1);
+  memcpy(parsed, args, sizeof(char *) * args_length + 1);
+  return parsed;
 }
 
 int includes(char *text, char delimiter)
