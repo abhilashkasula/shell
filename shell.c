@@ -27,6 +27,7 @@ int is_handled(char **args, List_ptr alias_list, int *exit_code)
   if (strcmp(actual, "alias") == 0)
   {
     handle_alias(args, alias_list);
+    *exit_code = 0;
     return 1;
   }
   return 0;
