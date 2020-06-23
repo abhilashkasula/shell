@@ -5,6 +5,8 @@
 #include <string.h>
 #include <signal.h>
 #include "alias.h"
+#include "utils.h"
+#include "var.h"
 
 #define COLOR "\e[0;36m"
 #define RESET "\e[0m"
@@ -34,7 +36,7 @@ void parse(char *command, char **argv)
   *argv = NULL;
 }
 
-int is_handled(char **argv, Alias_List_ptr alias_list)
+int is_handled(char **argv, List_ptr alias_list)
 {
   char *actual = get_actual(alias_list, argv[0]);
   if (strcmp(actual, "exit") == 0)
@@ -61,7 +63,7 @@ int main(void)
   char pwd[255];
   char dollar_color[10] = "\e[0;32m";
   signal(SIGINT, SIG_IGN);
-  Alias_List_ptr alias_list = create_alias_list();
+  List_ptr alias_list = create_list();
   while (1)
   {
     getcwd(pwd, sizeof(pwd));
@@ -76,7 +78,7 @@ int main(void)
 
     char *actual = get_actual(alias_list, argv[0]);
     int pid = fork();
-    
+
     if (pid == 0)
     {
       signal(SIGINT, exit_process);
