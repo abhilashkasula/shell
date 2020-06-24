@@ -1,0 +1,4 @@
+echo my shell
+a=5
+alias l=ls
+alias md=mkdir
