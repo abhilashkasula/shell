@@ -65,6 +65,19 @@ void execute(char *command, List_ptr aliases, List_ptr vars, int * exit_code)
   }
 }
 
+void load_shrc(List_ptr aliases, List_ptr vars, int * exit_code)
+{
+  char command[255];
+  FILE *fptr = fopen(".shrc", "r");
+
+  while (fptr != NULL && fgets(command, 255, fptr) != NULL)
+  {
+    int len = strlen(command);
+    command[len - 1] = command[len - 1] == '\n' ? ' ' : command[len - 1];
+    execute(command, aliases, vars, exit_code);
+  }
+}
+
 int main(void)
 {
   char command[255];
@@ -73,6 +86,7 @@ int main(void)
   List_ptr aliases = create_list();
   List_ptr vars = create_list();
   int exit_code = 0;
+  load_shrc(aliases, vars, &exit_code);
   while (1)
   {
     getcwd(pwd, sizeof(pwd));
