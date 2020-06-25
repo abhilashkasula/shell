@@ -4,6 +4,7 @@
 #include <sys/wait.h>
 #include <string.h>
 #include <signal.h>
+#include <fcntl.h>
 #include "alias.h"
 #include "utils.h"
 #include "var.h"
@@ -12,6 +13,33 @@
 #define GREEN "\e[0;32m"
 #define RED "\e[0;31m"
 #define RESET "\e[0m"
+
+void open_file_and_duplicate(char **args, int index, int mode)
+{
+  int fd = open(args[index + 1], O_RDWR);
+  dup2(fd, mode);
+  args[index] = NULL;
+}
+
+void handle_output_redirection(char **args, int index)
+{
+  creat(args[index + 1], S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH);
+  open_file_and_duplicate(args, index, 1);
+}
+
+void handle_redirection(char **args)
+{
+  int index = includes_array(args, '>');
+  if (index > 0)
+  {
+    handle_output_redirection(args, index);
+  }
+  index = includes_array(args, '<');
+  if (index > 0)
+  {
+    open_file_and_duplicate(args, index, 0);
+  }
+}
 
 int is_handled(char **args, List_ptr aliases, List_ptr vars, int *exit_code)
 {
@@ -31,7 +59,7 @@ int is_handled(char **args, List_ptr aliases, List_ptr vars, int *exit_code)
     *exit_code = 0;
     return 1;
   }
-  if(includes(actual, '='))
+  if (includes(actual, '='))
   {
     *exit_code = add_var(vars, actual);
     return 1;
@@ -39,7 +67,7 @@ int is_handled(char **args, List_ptr aliases, List_ptr vars, int *exit_code)
   return 0;
 }
 
-void execute(char *command, List_ptr aliases, List_ptr vars, int * exit_code)
+void execute(char *command, List_ptr aliases, List_ptr vars, int *exit_code)
 {
   char **args = split(command, ' ');
   interpolate(args, vars);
@@ -55,6 +83,7 @@ void execute(char *command, List_ptr aliases, List_ptr vars, int * exit_code)
   if (pid == 0)
   {
     signal(SIGINT, NULL);
+    handle_redirection(args);
     execvp(actual, args);
     printf("Command not found\n");
     exit(127);
@@ -65,7 +94,7 @@ void execute(char *command, List_ptr aliases, List_ptr vars, int * exit_code)
   }
 }
 
-void load_shrc(List_ptr aliases, List_ptr vars, int * exit_code)
+void load_shrc(List_ptr aliases, List_ptr vars, int *exit_code)
 {
   char command[255];
   FILE *fptr = fopen(".shrc", "r");

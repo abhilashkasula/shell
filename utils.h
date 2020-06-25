@@ -6,5 +6,6 @@
 
 char **split(char *text, char delimiter);
 int includes(char *text, char delimiter);
+int includes_array(char **text, char delimiter);
 
 #endif

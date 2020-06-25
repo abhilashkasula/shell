@@ -44,3 +44,21 @@ int includes(char *text, char delimiter)
   }
   return is_found;
 }
+
+int includes_array(char **text, char delimiter)
+{
+  int is_found = 0;
+  int index = -1;
+  int i = 0;
+  while(!is_found && (text[i]))
+  {
+    if(includes(text[i], delimiter))
+    {
+      is_found = 1;
+      index = i;
+    }
+    i++;
+  }
+  
+  return index;
+}
