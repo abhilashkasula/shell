@@ -1,44 +1,39 @@
-#include <stdio.h>
-#include <stdlib.h>
-#include <unistd.h>
-#include <sys/wait.h>
-#include <string.h>
-#include <signal.h>
-#include "alias.h"
-#include "utils.h"
-#include "var.h"
-#include "handle_built_in.h"
+#include "shell.h"
 
-#define COLOR "\e[0;36m"
-#define GREEN "\e[0;32m"
-#define RED "\e[0;31m"
-#define RESET "\e[0m"
-
-void execute(char *command, List_ptr aliases, List_ptr vars, int *exit_code)
+void delegate_to_child(char **args, List_ptr aliases, List_ptr vars, int *fd, int *fd_set, int *code)
 {
-  char **args = split(command, ' ');
-  interpolate(args, vars);
-
-  if (handle_built_in(args, aliases, vars, exit_code))
-  {
-    return;
-  }
-
-  char *actual = get_actual(aliases, args[0]);
   int pid = fork();
 
   if (pid == 0)
   {
     signal(SIGINT, NULL);
+    fd_set[2] && close(fd[0]);
+    fd_set[3] && close(fd[1]);
+    fd_set[0] && dup2(fd[0], 0);
+    fd_set[1] && dup2(fd[1], 1);
     handle_redirection(args);
-    execvp(actual, args);
+    execvp(args[0], args);
     printf("Command not found\n");
     exit(127);
   }
   else
   {
-    waitpid(pid, exit_code, 0);
+    waitpid(pid, code, 0);
   }
+}
+
+void execute_command(char *command, List_ptr aliases, List_ptr vars, int *fd, int *fd_set, int *code)
+{
+  char **args = split(command, ' ');
+  interpolate(args, vars);
+
+  if (handle_built_in(args, aliases, vars, code))
+  {
+    return;
+  }
+
+  args[0] = get_actual(aliases, args[0]);
+  delegate_to_child(args, aliases, vars, fd, fd_set, code);
 }
 
 void load_shrc(List_ptr aliases, List_ptr vars, int *exit_code)
@@ -50,8 +45,32 @@ void load_shrc(List_ptr aliases, List_ptr vars, int *exit_code)
   {
     int len = strlen(command);
     command[len - 1] = command[len - 1] == '\n' ? ' ' : command[len - 1];
-    execute(command, aliases, vars, exit_code);
+    int fd_set[4] = {0, 0, 0, 0};
+    execute_command(command, aliases, vars, NULL, fd_set, exit_code);
   }
+}
+
+void execute(char *command, List_ptr aliases, List_ptr vars, int *exit_code)
+{
+  int p[2];
+  int fd_set[4] = {0, 0, 0, 0};
+  if (!includes(command, '|'))
+  {
+    execute_command(command, aliases, vars, p, fd_set, exit_code);
+    return;
+  }
+  char **instructions = split(command, '|');
+  pipe(p);
+  fd_set[1] = 1;
+  fd_set[2] = 1;
+  execute_command(instructions[0], aliases, vars, p, fd_set, exit_code);
+  close(p[1]);
+  fd_set[0] = 1;
+  fd_set[1] = 0;
+  fd_set[2] = 0;
+  fd_set[3] = 1;
+  execute_command(instructions[1], aliases, vars, p, fd_set, exit_code);
+  close(p[0]);
 }
 
 int main(void)
