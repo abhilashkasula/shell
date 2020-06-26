@@ -30,7 +30,6 @@ void execute(char *command, List_ptr aliases, List_ptr vars, int *exit_code)
   if (pid == 0)
   {
     signal(SIGINT, NULL);
-    printf("%s", actual);
     handle_redirection(args);
     execvp(actual, args);
     printf("Command not found\n");
